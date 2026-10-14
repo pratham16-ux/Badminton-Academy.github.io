@@ -50,7 +50,10 @@ var SB = (function () {
   function users() { return get(K.u, []); }
   function find(email) { email = (email || '').trim().toLowerCase(); return users().filter(function (u) { return u.email === email; })[0] || null; }
   function pub(u) { if (!u) return null; var c = {}; for (var k in u) if (k !== 'pass') c[k] = u[k]; return c; }
-  function session() { var e = get(K.s, null); return e ? pub(find(e)) : null; }
+  function sessionEmail() {
+    try { var v = sessionStorage.getItem(K.s) || localStorage.getItem(K.s); return v ? JSON.parse(v) : null; } catch (e) { return null; }
+  }
+  function session() { var e = sessionEmail(); return e ? pub(find(e)) : null; }
   function home(role) { return role === 'coach' ? 'coach.html' : 'member.html'; }
 
   function register(d) {
@@ -65,16 +68,18 @@ var SB = (function () {
       return { ok: true };
     });
   }
-  function login(email, pass, role) {
+  function login(email, pass, role, remember) {
     var u = find(email);
     if (!u) return Promise.resolve({ ok: false, err: 'No account found with this email. Check it or create an account.' });
     return hash(pass).then(function (h) {
       if (h !== u.pass) return { ok: false, err: 'Incorrect password. Try again.' };
       if (u.role !== role) return { ok: false, err: 'This is a ' + u.role + ' account. Switch to "' + (u.role === 'coach' ? 'Coach' : 'Member') + '" above to log in.' };
-      set(K.s, u.email); return { ok: true, user: pub(u) };
+      try { localStorage.removeItem(K.s); sessionStorage.removeItem(K.s); } catch (e) {}
+      try { (remember ? localStorage : sessionStorage).setItem(K.s, JSON.stringify(u.email)); } catch (e) { return { ok: false, err: 'Browser storage is blocked, so login cannot be saved.' }; }
+      return { ok: true, user: pub(u) };
     });
   }
-  function logout() { try { localStorage.removeItem(K.s); } catch (e) {} }
+  function logout() { try { localStorage.removeItem(K.s); sessionStorage.removeItem(K.s); } catch (e) {} }
   function guard(role) {
     var u = session();
     if (!u) { location.replace('login.html'); return null; }
@@ -605,7 +610,7 @@ var SBUI = (function () {
       if (!pw.value) { bad(pw, 'Enter your password.'); ok = false; }
       if (!ok) { $('.bad input', f).focus(); return; }
       busy(btn, true, 'Logging in…');
-      SB.login(em.value, pw.value, r.get()).then(function (res) {
+      SB.login(em.value, pw.value, r.get(), $('#lremember').checked).then(function (res) {
         if (!res.ok) { busy(btn, false); alertBox(f, res.err); return; }
         var url = SB.home(res.user.role); btn.textContent = 'Opening dashboard…';
         alertBox(f, ''); var a = $('#flash'); a.innerHTML = 'Logged in. Opening your dashboard… <a href="' + url + '">Continue</a>'; a.classList.add('show');

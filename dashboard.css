@@ -349,3 +349,5 @@ dialog#dlg[open]{animation:pop .28s var(--ease)}
 @keyframes authIn{from{opacity:0;transform:translateY(-100%)}}
 @media (max-width:480px){.auth-logo .lgo{height:30px}.auth-back{padding:.4rem .75rem;font-size:.88rem}}
 @media (prefers-reduced-motion:reduce){.auth-top{animation:none}}
+.rem{margin:.2rem 0 1.1rem}.rem .chkl{cursor:pointer;font-weight:500;color:var(--ink)}.rem .chkl input{width:1.1rem;height:1.1rem;margin-top:.15rem;flex:none}.rem .chkl:hover span{color:var(--pine)}
+.fg .chkl,.rem .chkl{display:flex;gap:.6rem;align-items:center;margin:0;font-weight:500}.rem .chkl input{margin:0;accent-color:var(--pine)}
