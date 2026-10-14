@@ -75,7 +75,7 @@
   /* faq */
   $$('.fq button').forEach(function (b) {
     b.addEventListener('click', function () {
-      var f = b.parentElement, open = !f.classList.contains('open');
+      var f = b.closest('.fq'), open = !f.classList.contains('open');
       $$('.fq', f.parentElement).forEach(function (x) { x.classList.remove('open'); $('button', x).setAttribute('aria-expanded', 'false'); });
       f.classList.toggle('open', open); b.setAttribute('aria-expanded', open);
     });
